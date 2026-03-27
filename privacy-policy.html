@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vault for Actual — Privacy Policy</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #0F1117; color: #E2E8F0; line-height: 1.7; padding: 0 20px; }
+    .container { max-width: 680px; margin: 0 auto; padding: 60px 0 80px; }
+    .logo { display: flex; align-items: center; gap: 14px; margin-bottom: 48px; }
+    .logo-icon { width: 52px; height: 52px; background: #141820; border-radius: 12px; display: flex; align-items: center; justify-content: center; }
+    .logo-text { font-size: 22px; font-weight: 600; color: #FFFFFF; letter-spacing: -0.3px; }
+    .logo-sub { font-size: 13px; color: #64748B; margin-top: 1px; }
+    h1 { font-size: 32px; font-weight: 700; color: #FFFFFF; letter-spacing: -0.5px; margin-bottom: 8px; }
+    .updated { font-size: 13px; color: #64748B; margin-bottom: 40px; }
+    .highlight-box { background: #141820; border: 1px solid #1E293B; border-left: 3px solid #4B9EFF; border-radius: 10px; padding: 20px 24px; margin-bottom: 40px; }
+    .highlight-box p { font-size: 15px; color: #94A3B8; line-height: 1.6; }
+    .highlight-box strong { color: #4B9EFF; font-weight: 600; }
+    h2 { font-size: 18px; font-weight: 600; color: #FFFFFF; margin-top: 40px; margin-bottom: 12px; }
+    p { font-size: 15px; color: #94A3B8; margin-bottom: 16px; }
+    ul { list-style: none; margin-bottom: 16px; }
+    ul li { font-size: 15px; color: #94A3B8; padding: 6px 0 6px 20px; position: relative; }
+    ul li::before { content: "·"; position: absolute; left: 6px; color: #4B9EFF; font-weight: bold; }
+    .section { border-bottom: 1px solid #1E293B; padding-bottom: 32px; margin-bottom: 8px; }
+    .contact-box { background: #141820; border: 1px solid #1E293B; border-radius: 10px; padding: 20px 24px; margin-top: 40px; }
+    .contact-box p { margin-bottom: 8px; }
+    .contact-box p:last-child { margin-bottom: 0; }
+    a { color: #4B9EFF; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    footer { margin-top: 60px; padding-top: 24px; border-top: 1px solid #1E293B; font-size: 13px; color: #475569; text-align: center; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo">
+      <div class="logo-icon">
+        <svg width="32" height="32" viewBox="0 0 32 32">
+          <polygon points="6,7 11,7 16,20 21,7 26,7 16,26" fill="#4B9EFF"/>
+          <polygon points="13,7 19,7 16,13" fill="#141820"/>
+        </svg>
+      </div>
+      <div>
+        <div class="logo-text">Vault for Actual</div>
+        <div class="logo-sub">Personal Budget & Finance</div>
+      </div>
+    </div>
+
+    <h1>Privacy Policy</h1>
+    <p class="updated">Last updated: March 2026</p>
+
+    <div class="highlight-box">
+      <p><strong>The short version:</strong> Vault for Actual does not collect, store, or share any of your personal or financial data. All your data lives on your own self-hosted server. We never see it.</p>
+    </div>
+
+    <div class="section">
+      <h2>1. What Vault for Actual does</h2>
+      <p>Vault for Actual is a personal finance app that connects to your self-hosted Actual Budget server. It reads your financial data — transactions, accounts, budgets — directly from your server and displays it in a clean mobile interface.</p>
+      <p>Vault for Actual acts as a client for your own data. It does not operate any central servers that store your financial information.</p>
+    </div>
+
+    <div class="section">
+      <h2>2. Data we do NOT collect</h2>
+      <p>Vault for Actual does not collect, transmit, or store any of the following:</p>
+      <ul>
+        <li>Your financial transactions, account balances, or budget data</li>
+        <li>Your bank account numbers or financial institution credentials</li>
+        <li>Your name, email address, or any personal identifiers</li>
+        <li>Your device location or usage analytics</li>
+        <li>Crash reports or diagnostic data sent to our servers</li>
+        <li>Any data whatsoever on our own servers</li>
+      </ul>
+    </div>
+
+    <div class="section">
+      <h2>3. Your server, your data</h2>
+      <p>When you use Vault for Actual, you connect it to a server that you operate — either on your home network, a personal VPN like Tailscale, or a server you control. All data flows directly between your iPhone and your server.</p>
+      <p>The developer of Vault for Actual has no access to your server, your data, or your network. Your financial information never passes through any third-party infrastructure operated by this app.</p>
+    </div>
+
+    <div class="section">
+      <h2>4. AI features</h2>
+      <p>Vault for Actual includes an optional AI financial coach feature. If you choose to use this feature:</p>
+      <ul>
+        <li>You provide your own API key from OpenRouter.ai</li>
+        <li>Your spending summaries are sent to OpenRouter to generate responses</li>
+        <li>This data is subject to OpenRouter's own privacy policy</li>
+        <li>The AI feature is entirely optional — the app works fully without it</li>
+        <li>No API keys or AI responses are stored by Vault for Actual</li>
+      </ul>
+      <p>You can review OpenRouter's privacy policy at <a href="https://openrouter.ai/privacy">openrouter.ai/privacy</a>.</p>
+    </div>
+
+    <div class="section">
+      <h2>5. Local storage on your device</h2>
+      <p>Vault for Actual stores the following information locally on your iPhone using Apple's standard UserDefaults system:</p>
+      <ul>
+        <li>Your server URL (so you don't have to re-enter it)</li>
+        <li>Your selected AI model preference</li>
+        <li>App settings and preferences</li>
+      </ul>
+      <p>This data never leaves your device and is only used to configure the app. You can clear it at any time from the Settings screen inside the app.</p>
+    </div>
+
+    <div class="section">
+      <h2>6. Third-party services</h2>
+      <p>Vault for Actual does not integrate with any third-party analytics, advertising, or tracking services. The app contains no advertising SDKs, no analytics SDKs, and no tracking frameworks.</p>
+      <p>Your Actual Budget server may use SimpleFin Bridge to sync bank transactions. That relationship is between you and SimpleFin — Vault for Actual has no involvement in or knowledge of that connection.</p>
+    </div>
+
+    <div class="section">
+      <h2>7. Children's privacy</h2>
+      <p>Vault for Actual is not directed at children under 13 and does not knowingly collect information from children. The app requires users to operate their own server infrastructure, which is intended for adult users.</p>
+    </div>
+
+    <div class="section">
+      <h2>8. Changes to this policy</h2>
+      <p>If this privacy policy changes in a material way, we will update the date at the top of this page. Since Vault for Actual collects no data, significant changes to this policy are unlikely.</p>
+    </div>
+
+    <div class="contact-box">
+      <h2 style="margin-top: 0;">Contact</h2>
+      <p>If you have questions about this privacy policy or how Vault for Actual handles data, you can reach us at:</p>
+      <p><a href="/cdn-cgi/l/email-protection#781b1d0b190a1c15190a0c11161d0202381f15191114561b1715"><span class="__cf_email__" data-cfemail="610204120013050c001315080f041b1b21060c00080d4f020e0c">[email&#160;protected]</span></a
