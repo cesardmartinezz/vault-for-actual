@@ -1,5 +1,9 @@
 # Vault for Actual
 
+[![TestFlight](https://img.shields.io/badge/TestFlight-Join%20Beta-blue)](https://testflight.apple.com/join/yw3heBpF)
+
+**[Download on TestFlight](https://testflight.apple.com/join/yw3heBpF)**
+
 A personal finance iOS app for [Actual Budget](https://actualbudget.org) users. View your spending, trends, debt payoff, bill calendar, and AI financial coaching — all from your iPhone, connected to your own self-hosted server.
 
 Built with Claude. Made for myself, sharing with the community.
@@ -62,8 +66,9 @@ ACTUAL_BASE_URL=http://your-actual-budget-url:5006
 ACTUAL_PASSWORD=your-actual-budget-password
 ACTUAL_SYNC_ID=your-budget-sync-id
 OPENROUTER_API_KEY=sk-or-your-key-here
-OPENROUTER_MODEL=meta-llama/llama-3.1-8b-instruct:free
 ```
+
+> **Note:** The AI model is selected inside the app under Settings → AI Coach. You do not need to set it here.
 
 **Where to find your Sync ID:**
 - Open Actual Budget in your browser
