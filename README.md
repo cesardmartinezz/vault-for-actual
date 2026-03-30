@@ -1,8 +1,8 @@
 # Vault for Actual
 
-[![TestFlight](https://img.shields.io/badge/TestFlight-Join%20Beta-blue)](https://testflight.apple.com/join/Dv5ueXqt)
+[![TestFlight](https://img.shields.io/badge/TestFlight-Join%20Beta-blue)](https://testflight.apple.com/join/Dv5ueXqt) [![Ko-fi](https://img.shields.io/badge/Support-Ko--fi-FF5E5B)](https://ko-fi.com/cesarmartinez70180)
 
-**[Download on TestFlight](https://testflight.apple.com/join/Dv5ueXqt)**
+**[Download on TestFlight](https://testflight.apple.com/join/Dv5ueXqt)** · **[Support on Ko-fi](https://ko-fi.com/cesarmartinez70180)**
 
 A personal finance iOS app for [Actual Budget](https://actualbudget.org) users. View your spending, trends, debt payoff, bill calendar, and AI financial coaching — all from your iPhone, connected to your own self-hosted server.
 
