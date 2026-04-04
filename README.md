@@ -4,7 +4,7 @@
 
 **[Download on TestFlight](https://testflight.apple.com/join/Dv5ueXqt)** · **[Support on Ko-fi](https://ko-fi.com/cesarmartinez70180)**
 
-A personal finance iOS app for [Actual Budget](https://actualbudget.org) users. View your spending, trends, debt payoff, bill calendar, and AI financial coaching — all from your iPhone, connected to your own self-hosted server.
+A native iOS app for [Actual Budget](https://actualbudget.org) users. View your spending, trends, debt payoff, bill calendar, and get AI financial coaching — all from your iPhone, connected to your own self-hosted server.
 
 Built with Claude. Made for myself, sharing with the community.
 
@@ -13,12 +13,14 @@ Built with Claude. Made for myself, sharing with the community.
 ## What it does
 
 - **Spending Insights** — income, spending, net balance, top categories at a glance
-- **AI Financial Coach** — asks questions about your real spending data, powered by OpenRouter
+- **AI Financial Coach** — asks questions about your real data, updates budgets via chat, gives debt payoff timelines
 - **Debt Tracker** — snowball or avalanche payoff strategy with payoff date estimates
 - **Bill Calendar** — recurring charges mapped to a calendar
 - **Merchant Insights** — top merchants by spend and frequency
 - **6-Month Trends** — income vs spending over time
 - **Financial Health Score** — priorities and alerts based on your data
+- **PDF Export** — monthly summary you can save or share
+- **Locked Categories** — tell the AI which expenses are fixed so it never suggests cutting them
 
 ---
 
@@ -26,33 +28,74 @@ Built with Claude. Made for myself, sharing with the community.
 
 - iPhone running iOS 16 or later
 - A self-hosted [Actual Budget](https://actualbudget.org) instance
-- A server to run the Vault backend (same machine as Actual Budget works fine)
-- Node.js 18 or later
+- Docker installed on your server
 - An [OpenRouter](https://openrouter.ai) API key for AI features (optional, free tier available)
+
+---
+
+## How it works
+
+```
+iPhone App → Vault Backend (:3000) → actual-http-api (:5008) → Actual Budget (:5006)
+```
+
+You run two small services alongside your existing Actual Budget:
+1. **actual-http-api** — a Docker container that wraps Actual Budget with a REST API
+2. **Vault backend** — a small Node.js server that powers the app's features
 
 ---
 
 ## Backend Setup
 
-The app connects to a small Node.js backend that talks to your Actual Budget instance. You need to run this on your own server.
+### Step 1 — Run actual-http-api
 
-### 1. Clone or download the backend
+Run this Docker command on the same server as your Actual Budget. Replace the values with your own:
+
+```bash
+docker run -d \
+  --name actualhttpapi \
+  --restart unless-stopped \
+  -p 5008:5007 \
+  -e ACTUAL_SERVER_URL="http://YOUR_ACTUAL_BUDGET_IP:5006/" \
+  -e ACTUAL_SERVER_PASSWORD="your-actual-budget-password" \
+  -e API_KEY="any-strong-secret-you-make-up" \
+  jhonderson/actual-http-api:26.3.0
+```
+
+> **Replace `26.3.0`** with your Actual Budget version number. Check it in Actual Budget → Settings.
+
+> **Umbrel users:** Add `--network umbrel_main_network` and use `sudo docker run ...` so the container can reach Actual Budget.
+
+> **The `API_KEY`** is a secret you invent — any strong string works. You'll use it in your `.env` file.
+
+Test it worked:
+```bash
+curl -H "x-api-key: your-api-key" \
+  "http://localhost:5008/v1/budgets/YOUR_SYNC_ID/accounts"
+```
+You should see a list of your accounts.
+
+---
+
+### Step 2 — Set up the Vault backend
+
+Create a folder and download `server.js` from this repository:
 
 ```bash
 mkdir vault-backend
 cd vault-backend
+# Download server.js from this repo and place it here
 ```
 
-Download `server.js` from this repository and place it in the folder.
-
-### 2. Install dependencies
-
+Install dependencies:
 ```bash
 npm init -y
-npm install express cors dotenv @actual-app/api node-fetch@2
+npm install express cors dotenv node-fetch@2
 ```
 
-### 3. Create your .env file
+---
+
+### Step 3 — Create your .env file
 
 ```bash
 nano .env
@@ -62,93 +105,120 @@ Add the following — replace with your own values:
 
 ```
 PORT=3000
-ACTUAL_BASE_URL=http://your-actual-budget-url:5006
-ACTUAL_PASSWORD=your-actual-budget-password
+ACTUAL_HTTP_API_URL=http://localhost:5008
+ACTUAL_HTTP_API_KEY=your-api-key-from-step-1
 ACTUAL_SYNC_ID=your-budget-sync-id
-OPENROUTER_API_KEY=sk-or-your-key-here
+OPENROUTER_MODEL=meta-llama/llama-3.1-8b-instruct:free
 ```
-
-> **Note:** The AI model is selected inside the app under Settings → AI Coach. You do not need to set it here.
 
 **Where to find your Sync ID:**
-- Open Actual Budget in your browser
-- Go to Settings → Show advanced settings
-- Copy the Sync ID
+Open Actual Budget in your browser → Settings → Show advanced settings → Sync ID
 
-### 4. Start the server
+---
 
-```bash
-node server.js
-```
-
-Or with pm2 to keep it running:
+### Step 4 — Start the backend
 
 ```bash
-npm install -g pm2
+sudo npm install -g pm2
 pm2 start server.js --name vault-backend
 pm2 save
 pm2 startup
 ```
 
-### 5. Test it
+---
+
+### Step 5 — Test it
 
 ```bash
 curl http://localhost:3000/health
 ```
 
-You should see a JSON response confirming the backend is running.
+You should see `"backend":"ok"` with `"hasSyncId":true` and `"hasApiKey":true`.
 
 ---
 
 ## Connecting the App
 
-1. Download Vault for Actual from TestFlight (link in README or Reddit post)
-2. Open the app
-3. On the setup screen enter your server URL:
+1. Download from TestFlight
+2. Open the app — you'll see the setup screen
+3. Enter your **Vault backend URL** (not your Actual Budget URL):
    - Local network: `http://192.168.1.x:3000`
-   - Remote access via Tailscale: `http://100.x.x.x:3000`
-   - Any publicly accessible URL works
+   - Tailscale: `http://100.x.x.x:3000`
 4. Tap **Test & Connect**
-5. Done — your data loads automatically
+5. Follow the setup wizard — it detects your income sources and fixed expenses automatically
+
+> The URL must end in `:3000` and point to the Vault backend — not your Actual Budget URL.
 
 ---
 
 ## AI Features
 
-The AI coach is optional. To enable it:
-
 1. Get a free API key at [openrouter.ai](https://openrouter.ai)
-2. Open the app → Settings → AI Coach
-3. Paste your API key
-4. Choose a model (free models available)
+2. Open the app → Settings → AI Coach → paste your key
+3. Choose a model (free models available)
 
-Your spending data is sent to OpenRouter to generate responses. Nothing is stored by Vault. See the [privacy policy](https://cesardmartinezz.github.io/vault-for-actual/privacy-policy.html) for details.
+Try asking:
+- "Set my grocery budget to $500"
+- "When will I be debt free?"
+- "What should I cut this month?"
+- "Based on my last 3 months, set reasonable budgets"
 
 ---
 
 ## Remote Access
 
-To use the app outside your home network you have a few options:
-
-- **Tailscale** (recommended) — free, easy, secure VPN. Install on your server and iPhone and use the Tailscale IP as your server URL.
+- **Tailscale** (recommended) — free, secure VPN. Install on server and iPhone, use Tailscale IP.
 - **Cloudflare Tunnel** — free, no port forwarding needed
-- **Port forwarding** — open port 3000 on your router (less secure)
+- **Port forwarding** — open port 3000 on your router
+
+---
+
+## Common Issues
+
+**"Authentication failed: network-failure"**
+The `actualhttpapi` container can't reach Actual Budget. Make sure both are on the same Docker network (`--network umbrel_main_network` for Umbrel).
+
+**actual-http-api version mismatch**
+Use the same version tag as your Actual Budget Docker image (e.g. `26.3.0`).
+
+**Port already in use**
+Change the host port (e.g. `-p 5009:5007`) and update `ACTUAL_HTTP_API_URL` in `.env` to match.
+
+**App shows "Could not connect" after entering URL**
+Make sure the URL ends in `:3000` and points to your Vault backend — not your Actual Budget URL (which ends in `:5006` or similar).
+
+**App crashes or gets stuck after wrong URL**
+Go to Settings → Reset Server, then re-enter the correct URL.
+
+---
+
+## Upgrading from v1.0
+
+The backend has changed significantly in v1.1. You need to:
+
+1. Run the `actual-http-api` Docker container (Step 1 above)
+2. Replace your old `server.js` with the new one from this repo
+3. Update your `.env` — remove `ACTUAL_BASE_URL` and `ACTUAL_PASSWORD`, add `ACTUAL_HTTP_API_URL` and `ACTUAL_HTTP_API_KEY`
+4. Restart: `pm2 restart vault-backend --update-env`
 
 ---
 
 ## Privacy
 
-- Your financial data never passes through any servers operated by this app
-- All data flows directly between your iPhone and your own server
+- Your financial data flows directly between your iPhone and your own server
+- No data passes through any servers operated by this app
 - No analytics, no tracking, no ads
-- The developer cannot see your data
 
 Full privacy policy: [https://cesardmartinezz.github.io/vault-for-actual/privacy-policy.html](https://cesardmartinezz.github.io/vault-for-actual/privacy-policy.html)
 
 ---
 
+## Credits
+
+- [actual-http-api](https://github.com/jhonderson/actual-http-api) by jhonderson — the REST wrapper that makes this app possible. Huge thanks for building and maintaining it.
+
+---
+
 ## Feedback
 
-This was built for personal use and shared with the Actual Budget community. If you find bugs or have ideas for improvements open an issue or reach out at filet.eidola.8x@icloud.com.
-
-Currently working on automatic transaction syncing so you don't have to manually sync in Actual Budget.
+Built for personal use and shared with the Actual Budget community. Open an issue or reach out at filet.eidola.8x@icloud.com.
