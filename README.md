@@ -319,14 +319,80 @@ To use the app away from home you need a way to reach your server remotely:
 
 ## Updating from v1.0 to v1.1
 
-The backend changed in v1.1. Here's what to do:
+The backend changed significantly in v1.1. Follow these steps in order — don't skip any!
 
-1. Run the `actual-http-api` Docker container (Step 1 above — new requirement)
-2. Replace your old `server.js` with the new one from this page
-3. Update your `.env` file:
-   - Remove: `ACTUAL_BASE_URL` and `ACTUAL_PASSWORD`
-   - Add: `ACTUAL_HTTP_API_URL` and `ACTUAL_HTTP_API_KEY`
-4. Restart: `pm2 restart vault-backend --update-env`
+---
+
+**Step 1 — Stop your current backend**
+```bash
+pm2 stop vault-backend
+```
+
+---
+
+**Step 2 — Download the new server.js**
+```bash
+cd ~/vault-backend
+curl -O https://raw.githubusercontent.com/cesardmartinezz/vault-for-actual/main/server.js
+```
+
+---
+
+**Step 3 — Update your .env file**
+```bash
+nano .env
+```
+Delete everything and replace with:
+```
+PORT=3000
+ACTUAL_HTTP_API_URL=http://localhost:5008
+ACTUAL_HTTP_API_KEY=make-up-any-secret-key
+ACTUAL_SYNC_ID=your-sync-id-here
+OPENROUTER_MODEL=meta-llama/llama-3.1-8b-instruct:free
+```
+Save with **Ctrl+X → Y → Enter**
+
+> Replace `make-up-any-secret-key` with any password you invent and `your-sync-id-here` with your Sync ID from Actual Budget → Settings.
+
+---
+
+**Step 4 — Run actual-http-api** (new requirement in v1.1)
+
+This is new — you need this Docker container running before starting the backend. Run this command replacing the 3 values with your own:
+
+```bash
+docker run -d \
+  --name actualhttpapi \
+  --restart unless-stopped \
+  -p 5008:5007 \
+  -e ACTUAL_SERVER_URL="http://YOUR_SERVER_IP:5006/" \
+  -e ACTUAL_SERVER_PASSWORD="YOUR_ACTUAL_BUDGET_PASSWORD" \
+  -e API_KEY="make-up-any-secret-key" \
+  jhonderson/actual-http-api:26.3.0
+```
+
+> Use the same secret key you put in your .env file. Match `26.3.0` to your Actual Budget version.
+> Umbrel users: add `--network umbrel_main_network` and use `sudo docker run ...`
+
+---
+
+**Step 5 — Restart the backend**
+```bash
+pm2 restart vault-backend --update-env
+pm2 save
+```
+
+---
+
+**Step 6 — Test it**
+```bash
+curl http://localhost:3000/health
+```
+
+You should see `"backend":"ok"` — you're done! ✅
+
+If you see an error check the troubleshooting section above.
+
 
 ---
 
