@@ -1,0 +1,31 @@
+services:
+  actual-http-api:
+    image: jhonderson/actual-http-api:26.3.0
+    container_name: actualhttpapi
+    restart: unless-stopped
+    environment:
+      - ACTUAL_SERVER_URL=http://host.docker.internal:5006/
+      - ACTUAL_SERVER_PASSWORD=YOUR_ACTUAL_BUDGET_PASSWORD
+      - API_KEY=YOUR_SECRET_KEY
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  vault-backend:
+    image: node:20-alpine
+    container_name: vault-backend
+    restart: unless-stopped
+    working_dir: /app
+    volumes:
+      - ./server.js:/app/server.js
+      - ./data:/app/data
+    command: sh -c "npm install express cors dotenv node-fetch@2 --prefix /app && node server.js"
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - ACTUAL_HTTP_API_URL=http://actual-http-api:5007
+      - ACTUAL_HTTP_API_KEY=YOUR_SECRET_KEY
+      - ACTUAL_SYNC_ID=YOUR_SYNC_ID
+      - OPENROUTER_MODEL=meta-llama/llama-3.1-8b-instruct:free
+    depends_on:
+      - actual-http-api

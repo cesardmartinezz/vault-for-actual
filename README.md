@@ -40,12 +40,50 @@ Your iPhone → Vault Backend → actual-http-api → Actual Budget
 ```
 
 You need to run two things alongside your existing Actual Budget:
-- **actual-http-api** — a free Docker container that connects everything
-- **Vault backend** — a small Node.js server (just one file)
+- **actual-http-api** — a free Docker container that wraps Actual Budget with a REST API
+- **Vault backend** — a small Node.js server that powers all the AI features, analysis, and user preferences
+
+> **Why not call actual-http-api directly?** The Vault backend is where all the intelligence lives — AI context building, 3 months of spending history, locked categories, debt tracking, recurring charge detection, smart prompts, and user preferences. It's not just a middleman, it's the brain of the app.
 
 ---
 
-## Setup — Step by Step
+## Setup — Easy Way (Docker Compose) ⭐ Recommended
+
+If you have Docker installed this is the fastest way to get running. One file, three values to fill in, one command.
+
+**1. Download these two files** from this repo and put them in a new folder:
+- `docker-compose.yml`
+- `server.js`
+
+**2. Edit `docker-compose.yml`** — replace these 3 values:
+
+| Value | What to put |
+|-------|-------------|
+| `YOUR_ACTUAL_BUDGET_PASSWORD` | Password you use to log into Actual Budget |
+| `YOUR_SECRET_KEY` | Make up any password (e.g. `mysecretkey123`) |
+| `YOUR_SYNC_ID` | Found in Actual Budget → Settings → Sync ID |
+
+> Also update `26.3.0` to match your Actual Budget version
+
+**3. Run it:**
+```bash
+docker-compose up -d
+```
+
+**4. Test it:**
+```bash
+curl http://localhost:3000/health
+```
+
+You should see `"backend":"ok"` — you're done! 🎉
+
+> **Umbrel users:** Docker Compose may not work with Umbrel's network setup. Use the manual setup below instead and add `--network umbrel_main_network` to the actual-http-api command.
+
+---
+
+## Setup — Manual Way (pm2)
+
+Use this if you're on Umbrel, a NAS, or prefer more control.
 
 ### Step 1 — Run actual-http-api
 
