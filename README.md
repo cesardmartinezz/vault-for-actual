@@ -49,33 +49,100 @@ You need to run two things alongside your existing Actual Budget:
 
 ## Setup — Easy Way (Docker Compose) ⭐ Recommended
 
-If you have Docker installed this is the fastest way to get running. One file, three values to fill in, one command.
+This is the easiest way to get started. If you have Docker installed you can be up and running in about 5 minutes.
 
-**1. Download these two files** from this repo and put them in a new folder:
-- `docker-compose.yml`
-- `server.js`
+**Before you start:** You need to be able to connect to your server via SSH (Terminal on Mac, PuTTY on Windows). If you're not sure how to do that, check your server's documentation.
 
-**2. Edit `docker-compose.yml`** — replace these 3 values:
+---
 
-| Value | What to put |
-|-------|-------------|
-| `YOUR_ACTUAL_BUDGET_PASSWORD` | Password you use to log into Actual Budget |
-| `YOUR_SECRET_KEY` | Make up any password (e.g. `mysecretkey123`) |
-| `YOUR_SYNC_ID` | Found in Actual Budget → Settings → Sync ID |
+**Step 1 — Connect to your server**
 
-> Also update `26.3.0` to match your Actual Budget version
+Open Terminal on your Mac (or PuTTY on Windows) and SSH into your server:
 
-**3. Run it:**
 ```bash
-docker-compose up -d
+ssh username@your-server-ip
 ```
 
-**4. Test it:**
+For example: `ssh admin@10.0.0.50`
+
+---
+
+**Step 2 — Create a folder on your server**
+
+Once you're connected to your server, run:
+
+```bash
+mkdir vault-backend
+cd vault-backend
+```
+
+---
+
+**Step 3 — Download the files onto your server**
+
+Run these two commands to download the files directly to your server:
+
+```bash
+curl -O https://raw.githubusercontent.com/cesardmartinezz/vault-for-actual/main/docker-compose.yml
+curl -O https://raw.githubusercontent.com/cesardmartinezz/vault-for-actual/main/server.js
+```
+
+---
+
+**Step 4 — Edit the settings file**
+
+Open the docker-compose.yml file in a text editor:
+
+```bash
+nano docker-compose.yml
+```
+
+You'll see the file open in your terminal. Find these 3 lines and replace the ALL CAPS values with your own:
+
+| Find this | Replace with |
+|-----------|-------------|
+| `YOUR_ACTUAL_BUDGET_PASSWORD` | The password you use to log into Actual Budget in your browser |
+| `YOUR_SECRET_KEY` | Make up any password — write it down, you'll need it later (e.g. `mysecretkey123`) |
+| `YOUR_SYNC_ID` | Open Actual Budget in your browser → Settings → scroll down → copy the Sync ID |
+
+Also find `26.3.0` and change it to match your Actual Budget version (check in Actual Budget → Settings).
+
+When done press **Ctrl+X** then **Y** then **Enter** to save.
+
+---
+
+**Step 5 — Start everything**
+
+Run this one command:
+
+```bash
+docker compose up -d
+```
+
+Wait about 30 seconds for everything to start up.
+
+---
+
+**Step 6 — Check it's working**
+
+Run this:
+
 ```bash
 curl http://localhost:3000/health
 ```
 
-You should see `"backend":"ok"` — you're done! 🎉
+If you see `"backend":"ok"` — your backend is running! 🎉
+
+> ⚠️ **Important:** `localhost` only works when testing ON the server itself. When you open the Vault app on your iPhone you need to enter your server's real IP address — not localhost. For example:
+> - Home network: `http://10.0.0.50:3000`
+> - Tailscale: `http://100.64.0.1:3000`
+> - VPS: `http://203.0.113.10:3000`
+>
+> Not sure what your server's IP is? On your server run `hostname -I` and it will show you.
+
+If you see an error — check the troubleshooting section below.
+
+---
 
 > **Umbrel users:** Docker Compose may not work with Umbrel's network setup. Use the manual setup below instead and add `--network umbrel_main_network` to the actual-http-api command.
 
