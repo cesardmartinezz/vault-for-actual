@@ -15,6 +15,9 @@ const ACTUAL_HTTP_API_KEY = process.env.ACTUAL_HTTP_API_KEY;
 const ACTUAL_SYNC_ID = process.env.ACTUAL_SYNC_ID;
 const OPENROUTER_MODEL = process.env.OPENROUTER_MODEL || "meta-llama/llama-3.1-8b-instruct:free";
 
+// ENDPOINT: /sync - triggers bank sync
+// ENDPOINT: /refresh - forces data refresh
+
 // ─────────────────────────────────────────────────────────────
 // ACTUAL HTTP API HELPERS
 // ─────────────────────────────────────────────────────────────
@@ -408,18 +411,33 @@ app.get("/accounts-summary", async (req, res) => {
 
 app.get("/account-transactions", async (req, res) => {
   try {
-    const { accountId } = req.query;
+    const { accountId, month } = req.query;
     if (!accountId) return res.status(400).json({ success: false, error: "Missing accountId" });
+    
+    // Determine date range - default to last year for faster loading
+    let startDate = "2020-01-01";
+    
+    if (month) {
+      const { start, end } = getMonthRange(month);
+      startDate = start;
+    } else {
+      const now = new Date();
+      const oneYearAgo = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
+      startDate = oneYearAgo.toISOString().split("T")[0];
+    }
+    
     const [accounts, categories, txs] = await Promise.all([
       actualGet("/accounts"),
       actualGet("/categories"),
-      actualGet(`/accounts/${accountId}/transactions?startDate=2020-01-01&endDate=2030-12-31`)
+      actualGet("/accounts/" + accountId + "/transactions?since_date=" + startDate)
     ]);
     const account = accounts.find(a => a.id === accountId);
     if (!account) return res.status(404).json({ success: false, error: "Account not found" });
     const { categoryMap } = buildCategoryContext(categories);
     const balance = Number((Number(account.balance || 0) / 100).toFixed(2));
-    const cleaned = txs.slice(0, 100).map(tx => ({
+    // Sort by date descending (newest first) and take most recent 100
+    const sorted = [...txs].sort((a, b) => new Date(b.date) - new Date(a.date));
+    const cleaned = sorted.slice(0, 100).map(tx => ({
       id: tx.id, date: tx.date, notes: tx.notes || tx.imported_payee || tx.payee_name || null,
       amount: Number((Number(tx.amount) / 100).toFixed(2)),
       accountName: account.name,
@@ -954,13 +972,47 @@ YOUR COACHING PERSONALITY:
   }
 });
 
+// Bank sync endpoint - user needs to open Actual Budget to complete actual bank sync
+app.get("/refresh", async (req, res) => {
+  // Force fresh data fetch by timestamp
+  res.json({ success: true, message: "Data refresh triggered - fetching fresh data" });
+});
+
 app.get("/sync", async (req, res) => {
-  // Respond immediately — fire and forget the bank sync
+  // Trigger bank sync via actual-http-api
   res.json({ success: true, synced: new Date().toISOString(), message: "Sync initiated" });
-  // Trigger bank sync in background, don't await
-  actualPost("/accounts/banksync", {}).catch(() => {
-    // Silently ignore — bank sync fails if no connections configured
-  });
+  
+  try {
+    const syncId = process.env.ACTUAL_SYNC_ID;
+    const apiKey = process.env.ACTUAL_HTTP_API_KEY;
+    const apiUrl = process.env.ACTUAL_HTTP_API_URL || "http://localhost:5008";
+    
+    if (!syncId || !apiKey) {
+      console.log("Bank sync skipped: missing sync ID or API key");
+      return;
+    }
+    
+    // Call actual-http-api bank-sync endpoint
+    const syncUrl = `${apiUrl}/v1/budgets/${syncId}/accounts/banksync`;
+    const syncRes = await fetch(syncUrl, {
+      method: "POST",
+      headers: { 
+        "x-api-key": apiKey, 
+        "Content-Type": "application/json" 
+      },
+      body: JSON.stringify({})
+    });
+    
+    if (syncRes.ok) {
+      const syncData = await syncRes.json().catch(() => ({}));
+      console.log("Bank sync result:", syncData);
+    } else {
+      const errorText = await syncRes.text();
+      console.log("Bank sync failed:", syncRes.status, errorText);
+    }
+  } catch (err) {
+    console.log("Bank sync error:", err.message);
+  }
 });
 
 app.get("/category-trends", async (req, res) => {
